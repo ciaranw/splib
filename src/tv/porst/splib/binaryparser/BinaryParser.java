@@ -382,15 +382,24 @@ public class BinaryParser {
 
 		int value = 0;
 
-		for (int i=0;i<numberOfBits;i++) {
-			value = (value << 1) | ((data[bytePosition] >> (7 - bitPosition)) & 1);
+		for (int i=0; i<numberOfBits ;i++) {
+            boolean bit = (data[bytePosition] >> (7 - bitPosition) & 1) == 1;
+            
+            if(bit) {
+                value += 1 << ((numberOfBits - i) - 1);
+            }
+            
+            if(i == 0) {
+                //signed, so negate first position
+                value = (~value) + 1;
+            }
 
-			bitPosition++;
+            bitPosition++;
 
-			if (bitPosition == 8) {
-				bitPosition = 0;
-				bytePosition++;
-			}
+            if (bitPosition == 8) {
+                bitPosition = 0;
+                bytePosition++;
+            }
 		}
 
 		return new Bits(8 * oldBytePosition + oldBitPosition, numberOfBits, value);
