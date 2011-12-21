@@ -404,6 +404,13 @@ public class BinaryParser {
 
 		return new Bits(8 * oldBytePosition + oldBitPosition, numberOfBits, value);
 	}
+    
+    public FloatFBits readFBits(int numberOfBits) {
+        Bits bits = readSBits(numberOfBits);
+        Float floatValue = Float.intBitsToFloat(bits.value());    //doesnt work yet
+        
+        return new FloatFBits(bits.getBitPosition(), bits.getBitLength(), floatValue);
+    }
 
 	/**
 	 * Reads the next 0-terminated ASCII string from the byte stream.
