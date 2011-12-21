@@ -21,6 +21,9 @@ public class BinaryParser {
 	 * The current bit position.
 	 */
 	private int bitPosition = 0;
+    
+    private static final int FIXED_POINT_FRACTION_BITS = 16;
+    
 
 	/**
 	 * Creates a new binary parser object that parses data from
@@ -406,10 +409,31 @@ public class BinaryParser {
 	}
     
     public FloatFBits readFBits(int numberOfBits) {
-        Bits bits = readSBits(numberOfBits);
-        Float floatValue = Float.intBitsToFloat(bits.value());    //doesnt work yet
+        final int oldBytePosition = bytePosition;
+        final int oldBitPosition = bitPosition;
         
-        return new FloatFBits(bits.getBitPosition(), bits.getBitLength(), floatValue);
+        Integer integerValue = 0;
+        Integer fractionBits = FIXED_POINT_FRACTION_BITS;
+
+        if(numberOfBits > 16) {
+            //fraction part is (up to) last 16 bits, so signed integer part bits is numberOfBits - 16
+            int integerBits = numberOfBits - FIXED_POINT_FRACTION_BITS;
+
+            //integer part is signed;
+            Bits integerPart = readSBits(integerBits);  
+            integerValue = integerPart.value();
+        } else {
+            fractionBits = numberOfBits;
+        }
+        
+        //fraction part is not signed
+        UBits fractionPart = readBits(fractionBits);
+        
+        String representation = integerValue + "." + fractionPart.value();
+
+        Float floatValue = Float.parseFloat(representation);
+        
+        return new FloatFBits(8 * oldBytePosition + oldBitPosition, numberOfBits, floatValue);
     }
 
 	/**
