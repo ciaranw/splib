@@ -409,31 +409,10 @@ public class BinaryParser {
 	}
     
     public FloatFBits readFBits(int numberOfBits) {
-        final int oldBytePosition = bytePosition;
-        final int oldBitPosition = bitPosition;
+        Bits bits = readSBits(numberOfBits);
+        Float value = (bits.value() / 65536f);
         
-        Integer integerValue = 0;
-        Integer fractionBits = FIXED_POINT_FRACTION_BITS;
-
-        if(numberOfBits > 16) {
-            //fraction part is (up to) last 16 bits, so signed integer part bits is numberOfBits - 16
-            int integerBits = numberOfBits - FIXED_POINT_FRACTION_BITS;
-
-            //integer part is signed;
-            Bits integerPart = readSBits(integerBits);  
-            integerValue = integerPart.value();
-        } else {
-            fractionBits = numberOfBits;
-        }
-        
-        //fraction part is not signed
-        UBits fractionPart = readBits(fractionBits);
-        
-        String representation = integerValue + "." + fractionPart.value();
-
-        Float floatValue = Float.parseFloat(representation);
-        
-        return new FloatFBits(8 * oldBytePosition + oldBitPosition, numberOfBits, floatValue);
+        return new FloatFBits(bits.getBitPosition(), bits.getBitLength(), value);
     }
 
 	/**
