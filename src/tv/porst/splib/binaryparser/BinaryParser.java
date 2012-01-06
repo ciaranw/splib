@@ -408,11 +408,24 @@ public class BinaryParser {
 		return new Bits(8 * oldBytePosition + oldBitPosition, numberOfBits, value);
 	}
     
-    public FloatFBits readFBits(int numberOfBits) {
+    public FloatFBits readFBits(int numberOfBits, int numLowBits) {
         Bits bits = readSBits(numberOfBits);
-        Float value = (bits.value() / 65536f);
+        float divisor = (float) Math.pow(2, numLowBits);
+        Float value = (bits.value() / divisor);
         
         return new FloatFBits(bits.getBitPosition(), bits.getBitLength(), value);
+    }
+
+    public FloatFBits readFixed16() {
+        if (bytePosition * 8 + bitPosition + 16 > data.length * 8) {
+            throw new IllegalArgumentException("Not enough data left");
+        }
+
+        if (bitPosition != 0) {
+            throw new IllegalStateException("Parser is not byte aligned");
+        }
+
+        return readFBits(16, 8);
     }
 
 	/**
